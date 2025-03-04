@@ -38,7 +38,7 @@ El sistema permite gestionar clientes, productos (juegos y películas) y alquile
 
 ## Diagrama UML
 
-[Incluye aquí una imagen o enlace al diagrama UML que utilizaste como base para el proyecto]
+![Diagrama UML](images/uml.png)
 
 ## Cómo Ejecutar el Proyecto
 
