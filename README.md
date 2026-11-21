@@ -1,19 +1,26 @@
-# VideoClub — Java 17 · Spring Boot 3
+# VideoClub API — Java 17 + Spring Boot 3
 
-Proyecto de aprendizaje inspirado en el diagrama de clases UML incluido en `images/uml.png`. Se implementaron las **siete operaciones de la clase VideoClub** con una API REST y separación Controller → Service → Repository → JPA.
+A **learning-oriented REST API** derived from the [original VideoClub UML](images/uml.png). It currently implements **seven UML controller operations** with Spring MVC, services, Spring Data JPA and MySQL. Unit tests and an H2-based JPA integration test run in GitHub Actions.
 
-## Modelo
+> **Current scope ≠ future architecture.** The [advanced domain v2 diagram](docs/uml-v2-proposal.md) and [roadmap](ROADMAP.md) are **proposals**, not features available in the application. This is not a production-ready rental platform.
 
-- `Cliente`: identificador, documento, nombre, teléfono y email.
-- `Producto`: clase base con código, título y precio.
-- `Juego` y `Pelicula`: especializaciones JPA de `Producto` con estrategia `JOINED`.
-- `Alquiler`: vínculo con `Cliente` y `Producto`, fechas y estado.
-- Spring administra los servicios como singletons; **no** se creó un singleton estático manual aunque el UML lo menciona.
-- `GeneroPelicula` y las operaciones de alquiler no forman parte de las siete operaciones del controlador UML; su implementación queda pendiente.
+**Other implementations:** [Express 5 + TypeScript](https://github.com/samantonio91/videoclub-api-express-ts) · [NestJS + TypeScript](https://github.com/samantonio91/videoclub-api-nestjs-ts). These are comparative learning projects sharing a domain, not three independent commercial systems.
 
-## API implementada
+## Current architecture
 
-| UML | Método HTTP | Ruta |
+```text
+HTTP request
+  → VideoClubController
+  → ClienteService / JuegoService
+  → Spring Data JPA repository
+  → MySQL (development) / H2 (tests)
+```
+
+**Model in the repository today:** `Cliente`, abstract `Producto`, `Juego`, `Pelicula` and `Alquiler`. `Juego` and `Pelicula` use JPA `JOINED` inheritance from `Producto`. `Alquiler` has references to customer and product, but a complete rental/return HTTP workflow is **not implemented**. The `GeneroPelicula` model from the original UML is still pending. The service instances are managed by Spring rather than using a handwritten static singleton.
+
+### Implemented API contract (Spanish names retained from the UML)
+
+| UML method | HTTP | Endpoint |
 | --- | --- | --- |
 | AgregarCliente | POST | `/api/clientes` |
 | ModificarCliente | PUT | `/api/clientes/{codigo}` |
@@ -23,39 +30,45 @@ Proyecto de aprendizaje inspirado en el diagrama de clases UML incluido en `imag
 | AgregarJuego | POST | `/api/juegos` |
 | ModificarJuego | PUT | `/api/juegos/{codigo}` |
 
-Los códigos de las rutas de cliente/juego son los identificadores de base de datos (`Long`); el atributo `codigo` de `Producto` permanece como campo de dominio. Las búsquedas devuelven `404` cuando no existe el registro, `400` para entradas inválidas, y `409` si se intenta eliminar un cliente con alquileres asociados.
-
-**Compatibilidad:** también se conservan las rutas anteriores `POST /api/save-cliente` y `GET /api/get-client?cliente_id=1`.
-
-### Crear cliente
+Examples:
 
 ```bash
-curl -X POST http://localhost:8080/api/clientes -H 'Content-Type: application/json' -d '{"documento":"ABC123","nombre":"Ana García","telefono":"555-0101","email":"ana@example.com"}'
+curl -X POST http://localhost:8080/api/clientes \
+  -H 'Content-Type: application/json' \
+  -d '{"documento":"ABC123","nombre":"Ana García","telefono":"5550101","email":"ana@example.com"}'
+
+curl -X POST http://localhost:8080/api/juegos \
+  -H 'Content-Type: application/json' \
+  -d '{"codigo":101,"titulo":"Example Game","precio":199.0,"plataforma":"PC","genero":"Adventure"}'
 ```
 
-### Crear juego
+Customer/game path IDs are database IDs (`Long`), while `Producto.codigo` is a domain field. Not-found operations return 404; invalid inputs return 400; deletion of a customer referenced by rentals returns 409. Two earlier routes are retained for compatibility: `POST /api/save-cliente` and `GET /api/get-client?cliente_id=1`.
 
-```bash
-curl -X POST http://localhost:8080/api/juegos -H 'Content-Type: application/json' -d '{"codigo":101,"titulo":"Juego de ejemplo","precio":199.0,"plataforma":"PC","genero":"Aventura"}'
-```
+## Run locally
 
-## Desarrollo local
+Prerequisites: **JDK 17**, **MySQL**, and the included Gradle wrapper.
 
-1. Instala **JDK 17** y **MySQL**; crea la base `videoclub`.
-2. Configura `DB_USERNAME` y `DB_PASSWORD` como variables de entorno locales.
-3. Ejecuta `./gradlew bootRun` (Windows: `gradlew.bat bootRun`).
-4. Para pruebas: `./gradlew test` (usando H2 en memoria; no requiere MySQL).
+1. Create a local `videoclub` MySQL database.
+2. Configure `DB_USERNAME` and `DB_PASSWORD` in your local environment.
+3. Start the service: `./gradlew bootRun` (Windows: `gradlew.bat bootRun`).
+4. Run tests: `./gradlew test` (H2 test configuration; MySQL is not required to run tests).
 
-**Importante:** los cambios en la herencia `Producto/Juego/Pelicula`, las fechas de `Alquiler` y el campo `Cliente.documento` alteran el esquema. Usa una base de datos de desarrollo limpia o crea migraciones antes de conservar datos preexistentes. No utilices `ddl-auto=update` para migrar datos de producción.
+**Schema warning:** JPA `JOINED` inheritance, `Cliente.documento` and the rental date fields modified the original schema. Do not assume `ddl-auto=update` is a safe production migration strategy. A versioned [Flyway baseline is planned](https://github.com/samantonio91/videoclub-api-java/issues/5). Do not commit secrets.
 
-## Pruebas
+## Current tests
 
-- Unitarias para altas, modificaciones, búsquedas, borrados y validaciones.
-- Integración JPA para herencia y filtros de clientes.
-- GitHub Actions ejecuta `./gradlew test` en PR y push a `main`.
+- Service-level tests for customer and game operations.
+- JPA integration tests for inheritance and filtering.
+- GitHub Actions executing Gradle tests on pull requests and on `main`.
 
-## Alcance y siguientes mejoras
+No claim is made here about production traffic, deployment, rental volume or comprehensive end-to-end coverage.
 
-Este es un proyecto didáctico, no un sistema de alquiler listo para producción: faltan autenticación, operaciones de préstamos/devoluciones, migraciones de esquema, API OpenAPI y pruebas de extremo a extremo. Las siete operaciones descritas se implementaron; deben verificarse con las pruebas de CI antes de fusionar.
+## Advanced Spring roadmap (not implemented yet)
 
-![UML de VideoClub](images/uml.png)
+The [issue-linked roadmap](ROADMAP.md) covers Bean Validation and response DTOs, Flyway, stock copies, transactional rentals and returns, reservations, optimistic/pessimistic locking, Testcontainers, Spring Security, OpenAPI, observability and optional notifications/payments.
+
+The [proposed v2 UML](docs/uml-v2-proposal.md) adds an inventory copy to distinguish a catalog product from an individual rentable item. It includes a proposed concurrent rental sequence. The **original UML remains unchanged**:
+
+![Original VideoClub UML diagram](images/uml.png)
+
+[README en español](README.es.md) · [Roadmap](ROADMAP.md) · [Advanced UML proposal](docs/uml-v2-proposal.md)
