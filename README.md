@@ -1,69 +1,53 @@
-# Sistema de Videoclub - Microservicio Spring Boot 3 con Java 17 y MySQL
+# VideoClub — Java / Spring Boot learning API
 
-Este proyecto es un ejercicio de aprendizaje donde he desarrollado un sistema de videoclub basado en un diagrama UML, implementado como un microservicio Spring Boot 3 con Java 17 y persistencia de datos en MySQL utilizando JPA.
+**English:** Learning project based on a UML model for customers, products (movies and games), and rentals. The repository implements domain classes, JPA repositories, services, and **two customer-related REST endpoints**.
 
-## Descripción
+**Español:** Ejercicio basado en un modelo UML para clientes, productos (películas y juegos) y alquileres. El repositorio incluye entidades, repositorios JPA, servicios y **dos endpoints REST relacionados con clientes**.
 
-El objetivo principal de este proyecto es practicar y demostrar mis habilidades en:
+## Tech stack
 
-* **Diseño basado en UML**: Traducir un diagrama de clases UML a una implementación funcional.
-* **Desarrollo de microservicios**: Construir una aplicación modular y escalable utilizando Spring Boot 3.
-* **Java 17**: Aprovechar las características y mejoras del lenguaje Java más reciente.
-* **Persistencia de datos**: Utilizar JPA para interactuar con una base de datos MySQL.  **implementando el patrón DAO para la capa de acceso a datos.**
-* **Patrón Singleton**: Implementar el patrón Singleton en la clase controladora `VideoClub`.
-* * **Transferencia de datos**: **Utilizar un DTO para la persistencia de la relación entre Cliente y Alquiler.**
+Java 17 · Spring Boot 3.4.3 · Gradle · Spring Web · Spring Data JPA / Hibernate · MySQL · Lombok
 
-El sistema permite gestionar clientes, productos (juegos y películas) y alquileres, siguiendo las relaciones y funcionalidades definidas en el diagrama UML proporcionado.
+## Implemented API / API implementada
 
-## Stack Tecnológico
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/save-cliente` | Create a customer from a `ClienteDTO` |
+| `GET` | `/api/get-client?cliente_id=1` | Get a customer by ID |
 
-* **Lenguaje**: Java 17
-* **Framework**: Spring Boot 3
-* **Base de datos**: MySQL
-* **Persistencia**: JPA (Hibernate)
-* **Patrón de diseño**: Singleton
+Example request body for `POST /api/save-cliente`:
 
-## Patrones de Diseño
+```json
+{
+  "nombre": "Cliente de ejemplo",
+  "telefono": "0000000000",
+  "email": "cliente@example.com",
+  "alquilerIds": []
+}
+```
 
-* **DAO (Data Access Object):** Se utiliza para la capa de acceso a datos, separando la lógica de negocio de la lógica de persistencia.
-* **DTO (Data Transfer Object):** Se utiliza para la transferencia de datos entre la capa de presentación y la capa de persistencia, específicamente para la relación entre Cliente y Alquiler.
-* **Singleton:** Se implementa en la clase controladora `VideoClub` para garantizar una única instancia.
+The domain includes `Cliente`, `Alquiler`, `Juego`, `Pelicula`, and `Producto`. This is an in-progress exercise: CRUD for all entities, validation, API documentation, and comprehensive tests are **not yet implemented**.
 
-## Funcionalidades Principales
+## Local development
 
-* Gestión de clientes: Agregar, modificar, eliminar, buscar y mostrar clientes.
-* Gestión de productos (juegos y películas): Agregar, modificar.
-* Gestión de alquileres: Registrar alquileres, incluyendo la relación con clientes y productos.
-* Consulta de información: Mostrar listados de clientes y productos.
+1. Install JDK 17 and MySQL.
+2. Create a local MySQL database named `videoclub`.
+3. Set the `DB_USERNAME` and `DB_PASSWORD` environment variables for that local database. **Never commit real credentials.**
+4. Run `./gradlew bootRun` (Windows: `gradlew.bat bootRun`).
 
-## Diagrama UML
+> This setup has not been run as part of the documentation review. The application may require additional fixes; the repository is not presented as production-ready.
 
-![Diagrama UML](images/uml.png)
+## Roadmap / Próximos pasos
 
-## Cómo Ejecutar el Proyecto
+- Validate request payloads and handle missing customer IDs.
+- Complete services and expose rental/product endpoints.
+- Add unit and integration tests.
+- Add OpenAPI documentation and reproducible example data.
 
-1.  Asegúrate de tener instalado Java 17 y MySQL.
-2.  Clona este repositorio.
-3.  Crea una base de datos MySQL con el nombre especificado en `application.properties`.
-4.  Configura las credenciales de la base de datos en `application.properties`.
-5.  Ejecuta la aplicación Spring Boot desde tu IDE o utilizando Gradle: `mvn spring-boot:run`.
+## UML
 
-## Próximos Pasos
+![UML diagram](images/uml.png)
 
-* Implementar pruebas unitarias y de integración.
-* Agregar validaciones y manejo de errores.
-* Mejorar la interfaz de usuario (si se incluye una).
-* Implementar servicios REST para exponer la funcionalidad del microservicio.
-* Agregar documentación de la API utilizando Swagger o OpenAPI.
+---
 
-## Autor
-
-[samantonio91] ([samantonio91](https://github.com/samantonio91))
-
-## Contacto
-
-[sam.antonio.91@gmail.com]
-
-## Licencia
-
-[1.0.0]
+**Portfolio note:** Learning project demonstrating the progression from UML to a layered Java backend.
