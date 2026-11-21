@@ -1,53 +1,61 @@
-# VideoClub — Java / Spring Boot learning API
+# VideoClub — Java 17 · Spring Boot 3
 
-**English:** Learning project based on a UML model for customers, products (movies and games), and rentals. The repository implements domain classes, JPA repositories, services, and **two customer-related REST endpoints**.
+Proyecto de aprendizaje inspirado en el diagrama de clases UML incluido en `images/uml.png`. Se implementaron las **siete operaciones de la clase VideoClub** con una API REST y separación Controller → Service → Repository → JPA.
 
-**Español:** Ejercicio basado en un modelo UML para clientes, productos (películas y juegos) y alquileres. El repositorio incluye entidades, repositorios JPA, servicios y **dos endpoints REST relacionados con clientes**.
+## Modelo
 
-## Tech stack
+- `Cliente`: identificador, documento, nombre, teléfono y email.
+- `Producto`: clase base con código, título y precio.
+- `Juego` y `Pelicula`: especializaciones JPA de `Producto` con estrategia `JOINED`.
+- `Alquiler`: vínculo con `Cliente` y `Producto`, fechas y estado.
+- Spring administra los servicios como singletons; **no** se creó un singleton estático manual aunque el UML lo menciona.
+- `GeneroPelicula` y las operaciones de alquiler no forman parte de las siete operaciones del controlador UML; su implementación queda pendiente.
 
-Java 17 · Spring Boot 3.4.3 · Gradle · Spring Web · Spring Data JPA / Hibernate · MySQL · Lombok
+## API implementada
 
-## Implemented API / API implementada
-
-| Method | Path | Purpose |
+| UML | Método HTTP | Ruta |
 | --- | --- | --- |
-| `POST` | `/api/save-cliente` | Create a customer from a `ClienteDTO` |
-| `GET` | `/api/get-client?cliente_id=1` | Get a customer by ID |
+| AgregarCliente | POST | `/api/clientes` |
+| ModificarCliente | PUT | `/api/clientes/{codigo}` |
+| EliminarCliente | DELETE | `/api/clientes/{codigo}` |
+| MostrarClientes | GET | `/api/clientes?documento=ABC&nombre=Ana` |
+| BuscarCliente | GET | `/api/clientes/{codigo}` |
+| AgregarJuego | POST | `/api/juegos` |
+| ModificarJuego | PUT | `/api/juegos/{codigo}` |
 
-Example request body for `POST /api/save-cliente`:
+Los códigos de las rutas de cliente/juego son los identificadores de base de datos (`Long`); el atributo `codigo` de `Producto` permanece como campo de dominio. Las búsquedas devuelven `404` cuando no existe el registro, `400` para entradas inválidas, y `409` si se intenta eliminar un cliente con alquileres asociados.
 
-```json
-{
-  "nombre": "Cliente de ejemplo",
-  "telefono": "0000000000",
-  "email": "cliente@example.com",
-  "alquilerIds": []
-}
+**Compatibilidad:** también se conservan las rutas anteriores `POST /api/save-cliente` y `GET /api/get-client?cliente_id=1`.
+
+### Crear cliente
+
+```bash
+curl -X POST http://localhost:8080/api/clientes -H 'Content-Type: application/json' -d '{"documento":"ABC123","nombre":"Ana García","telefono":"555-0101","email":"ana@example.com"}'
 ```
 
-The domain includes `Cliente`, `Alquiler`, `Juego`, `Pelicula`, and `Producto`. This is an in-progress exercise: CRUD for all entities, validation, API documentation, and comprehensive tests are **not yet implemented**.
+### Crear juego
 
-## Local development
+```bash
+curl -X POST http://localhost:8080/api/juegos -H 'Content-Type: application/json' -d '{"codigo":101,"titulo":"Juego de ejemplo","precio":199.0,"plataforma":"PC","genero":"Aventura"}'
+```
 
-1. Install JDK 17 and MySQL.
-2. Create a local MySQL database named `videoclub`.
-3. Set the `DB_USERNAME` and `DB_PASSWORD` environment variables for that local database. **Never commit real credentials.**
-4. Run `./gradlew bootRun` (Windows: `gradlew.bat bootRun`).
+## Desarrollo local
 
-> This setup has not been run as part of the documentation review. The application may require additional fixes; the repository is not presented as production-ready.
+1. Instala **JDK 17** y **MySQL**; crea la base `videoclub`.
+2. Configura `DB_USERNAME` y `DB_PASSWORD` como variables de entorno locales.
+3. Ejecuta `./gradlew bootRun` (Windows: `gradlew.bat bootRun`).
+4. Para pruebas: `./gradlew test` (usando H2 en memoria; no requiere MySQL).
 
-## Roadmap / Próximos pasos
+**Importante:** los cambios en la herencia `Producto/Juego/Pelicula`, las fechas de `Alquiler` y el campo `Cliente.documento` alteran el esquema. Usa una base de datos de desarrollo limpia o crea migraciones antes de conservar datos preexistentes. No utilices `ddl-auto=update` para migrar datos de producción.
 
-- Validate request payloads and handle missing customer IDs.
-- Complete services and expose rental/product endpoints.
-- Add unit and integration tests.
-- Add OpenAPI documentation and reproducible example data.
+## Pruebas
 
-## UML
+- Unitarias para altas, modificaciones, búsquedas, borrados y validaciones.
+- Integración JPA para herencia y filtros de clientes.
+- GitHub Actions ejecuta `./gradlew test` en PR y push a `main`.
 
-![UML diagram](images/uml.png)
+## Alcance y siguientes mejoras
 
----
+Este es un proyecto didáctico, no un sistema de alquiler listo para producción: faltan autenticación, operaciones de préstamos/devoluciones, migraciones de esquema, API OpenAPI y pruebas de extremo a extremo. Las siete operaciones descritas se implementaron; deben verificarse con las pruebas de CI antes de fusionar.
 
-**Portfolio note:** Learning project demonstrating the progression from UML to a layered Java backend.
+![UML de VideoClub](images/uml.png)

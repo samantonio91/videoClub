@@ -1,28 +1,18 @@
 package com.example.videoClub.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
+import lombok.Setter;
 
 @Entity
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Table(name = "tab_pelicula")
-public class Pelicula implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long peliculaId;
-
+@PrimaryKeyJoinColumn(name = "pelicula_id")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Pelicula extends Producto {
     private Integer duracion;
     private String idioma;
-
+    // GeneroPelicula del UML se deja para una fase separada: no define operaciones.
 }

@@ -1,40 +1,40 @@
 package com.example.videoClub.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Entity
-@Data
-@AllArgsConstructor
+@Table(name = "tab_alquiler")
+@Getter
+@Setter
 @NoArgsConstructor
-@Builder
-@Table(name="tab_alquiler")
 public class Alquiler implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-        private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long alquilerId;
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long alquilerId;
+    @Column(name = "fecha_alquiler")
+    private LocalDate fechaAlquiler;
 
-        @JsonProperty("fecha_alquiler")
-        @Column(name = "fecha_alquiler")
-        private String fechaAlquiler;
+    @Column(name = "fecha_entrega")
+    private LocalDate fechaEntrega;
 
-        @JsonProperty("fecha_entrega")
-        @Column(name = "fecha_entrega")
-        private String fechaEntrega;
+    private Boolean alquilado;
 
-        private Boolean alquilado;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    @JsonIgnore
+    private Cliente cliente;
 
-        @ManyToOne
-        @JoinColumn(name = "cliente_id")
-        private Cliente cliente;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "producto_id")
+    private Producto producto;
 }
