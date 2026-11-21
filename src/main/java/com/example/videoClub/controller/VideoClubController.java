@@ -1,11 +1,12 @@
 package com.example.videoClub.controller;
 
-import com.example.videoClub.domain.Cliente;
-import com.example.videoClub.domain.Juego;
 import com.example.videoClub.domain.dto.ClienteDTO;
+import com.example.videoClub.domain.dto.ClienteResponse;
 import com.example.videoClub.domain.dto.JuegoDTO;
+import com.example.videoClub.domain.dto.JuegoResponse;
 import com.example.videoClub.service.ClienteService;
 import com.example.videoClub.service.JuegoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * UML operations implemented as REST endpoints.
+ * Request validation and response mapping belong to the HTTP boundary.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -21,13 +26,15 @@ public class VideoClubController {
     private final JuegoService juegoService;
 
     @PostMapping("/clientes")
-    public ResponseEntity<Cliente> agregarCliente(@RequestBody ClienteDTO datos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.agregarCliente(datos));
+    public ResponseEntity<ClienteResponse> agregarCliente(@Valid @RequestBody ClienteDTO datos) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ClienteResponse.from(clienteService.agregarCliente(datos)));
     }
 
     @PutMapping("/clientes/{codigo}")
-    public ResponseEntity<Cliente> modificarCliente(@PathVariable Long codigo, @RequestBody ClienteDTO datos) {
-        return ResponseEntity.ok(clienteService.modificarCliente(codigo, datos));
+    public ResponseEntity<ClienteResponse> modificarCliente(
+            @PathVariable Long codigo, @Valid @RequestBody ClienteDTO datos) {
+        return ResponseEntity.ok(ClienteResponse.from(clienteService.modificarCliente(codigo, datos)));
     }
 
     @DeleteMapping("/clientes/{codigo}")
@@ -37,35 +44,39 @@ public class VideoClubController {
     }
 
     @GetMapping("/clientes")
-    public ResponseEntity<List<Cliente>> mostrarClientes(
+    public ResponseEntity<List<ClienteResponse>> mostrarClientes(
             @RequestParam(required = false) String documento,
             @RequestParam(required = false) String nombre) {
-        return ResponseEntity.ok(clienteService.mostrarClientes(documento, nombre));
+        return ResponseEntity.ok(clienteService.mostrarClientes(documento, nombre).stream()
+                .map(ClienteResponse::from).toList());
     }
 
     @GetMapping("/clientes/{codigo}")
-    public ResponseEntity<Cliente> buscarCliente(@PathVariable Long codigo) {
-        return ResponseEntity.ok(clienteService.buscarCliente(codigo));
+    public ResponseEntity<ClienteResponse> buscarCliente(@PathVariable Long codigo) {
+        return ResponseEntity.ok(ClienteResponse.from(clienteService.buscarCliente(codigo)));
     }
 
     @PostMapping("/juegos")
-    public ResponseEntity<Juego> agregarJuego(@RequestBody JuegoDTO datos) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(juegoService.agregarJuego(datos));
+    public ResponseEntity<JuegoResponse> agregarJuego(@Valid @RequestBody JuegoDTO datos) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(JuegoResponse.from(juegoService.agregarJuego(datos)));
     }
 
     @PutMapping("/juegos/{codigo}")
-    public ResponseEntity<Juego> modificarJuego(@PathVariable Long codigo, @RequestBody JuegoDTO datos) {
-        return ResponseEntity.ok(juegoService.modificarJuego(codigo, datos));
+    public ResponseEntity<JuegoResponse> modificarJuego(
+            @PathVariable Long codigo, @Valid @RequestBody JuegoDTO datos) {
+        return ResponseEntity.ok(JuegoResponse.from(juegoService.modificarJuego(codigo, datos)));
     }
 
-    // Rutas originales preservadas por compatibilidad.
+    // Legacy routes retained; response JSON is now a stable DTO representation.
     @PostMapping("/save-cliente")
-    public ResponseEntity<Cliente> saveCliente(@RequestBody ClienteDTO datos) {
-        return ResponseEntity.ok(clienteService.agregarCliente(datos));
+    public ResponseEntity<ClienteResponse> saveCliente(@Valid @RequestBody ClienteDTO datos) {
+        return ResponseEntity.ok(ClienteResponse.from(clienteService.agregarCliente(datos)));
     }
 
     @GetMapping("/get-client")
-    public ResponseEntity<Cliente> getCliente(@RequestParam(name = "cliente_id") Long clienteId) {
-        return ResponseEntity.ok(clienteService.buscarCliente(clienteId));
+    public ResponseEntity<ClienteResponse> getCliente(
+            @RequestParam(name = "cliente_id") Long clienteId) {
+        return ResponseEntity.ok(ClienteResponse.from(clienteService.buscarCliente(clienteId)));
     }
 }

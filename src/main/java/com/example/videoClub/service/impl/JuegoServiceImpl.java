@@ -35,8 +35,9 @@ public class JuegoServiceImpl implements JuegoService {
     }
 
     private void validar(JuegoDTO datos) {
+        // Service-side defensive checks remain useful outside MVC/Bean Validation.
         if (datos == null || datos.titulo() == null || datos.titulo().isBlank()
-                || datos.precio() == null || datos.precio() < 0) {
+                || datos.precio() == null || !Double.isFinite(datos.precio()) || datos.precio() < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Título y precio válido son obligatorios");
         }
