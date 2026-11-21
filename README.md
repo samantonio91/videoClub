@@ -4,6 +4,8 @@ A **learning-oriented REST API** derived from the [original VideoClub UML](image
 
 > **Current scope ≠ future architecture.** The [advanced domain v2 diagram](docs/uml-v2-proposal.md) and [roadmap](ROADMAP.md) are **proposals**, not features available in the application. This is not a production-ready rental platform.
 
+**Portfolio overview:** [VideoClub Backend Lab — all three implementations](docs/showcase/README.md) · [Español](docs/showcase/README.es.md)
+
 **Other implementations:** [Express 5 + TypeScript](https://github.com/samantonio91/videoclub-api-express-ts) · [NestJS + TypeScript](https://github.com/samantonio91/videoclub-api-nestjs-ts). These are comparative learning projects sharing a domain, not three independent commercial systems.
 
 ## Current architecture
